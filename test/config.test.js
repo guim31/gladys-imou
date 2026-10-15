@@ -1,33 +1,48 @@
+// -----------------------------------------------------------------------------
+// The configuration as the code reads it: defaults, trimmed credentials,
+// data centres, intervals and the two safety switches.
+// -----------------------------------------------------------------------------
+
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeConfig, DEFAULT_CONFIG } from '../src/config.js';
+import { DEFAULT_CONFIG, normalizeConfig } from '../src/config.js';
 
-test('normalizeConfig returns the defaults when called with no argument', () => {
-  assert.deepEqual(normalizeConfig(), DEFAULT_CONFIG);
+test('an empty configuration gives the defaults, safe ones', () => {
+  assert.deepEqual(normalizeConfig({}), {
+    appId: '',
+    appSecret: '',
+    region: 'eu',
+    host: 'openapi-fk.easy4ip.com',
+    alarmIntervalMs: 60_000,
+    snapshotIntervalMs: 15 * 60_000,
+    allowDisarm: false,
+    allowSiren: false,
+    language: 'fr',
+  });
+  assert.deepEqual(normalizeConfig(DEFAULT_CONFIG), normalizeConfig(undefined));
 });
 
-test('normalizeConfig keeps user values over the defaults', () => {
-  const config = normalizeConfig({ latitude: 45.5, longitude: -73.6, unit: 'fahrenheit' });
-  assert.equal(config.latitude, 45.5);
-  assert.equal(config.longitude, -73.6);
-  assert.equal(config.unit, 'fahrenheit');
-});
-
-test('normalizeConfig coerces numeric strings coming from a form', () => {
-  const config = normalizeConfig({ latitude: '48.8', longitude: '2.3', poll_frequency: '600' });
-  assert.equal(config.latitude, 48.8);
-  assert.equal(config.longitude, 2.3);
-  assert.equal(config.poll_frequency, 600);
-  assert.equal(typeof config.poll_frequency, 'number');
-});
-
-test('normalizeConfig falls back to the default for a missing numeric field', () => {
-  const config = normalizeConfig({ unit: 'celsius' });
-  assert.equal(config.poll_frequency, DEFAULT_CONFIG.poll_frequency);
-});
-
-test('GLADYS_PREFER_LOCAL defaults to true and only an explicit false disables it', () => {
-  assert.equal(normalizeConfig().GLADYS_PREFER_LOCAL, true);
-  assert.equal(normalizeConfig({ GLADYS_PREFER_LOCAL: true }).GLADYS_PREFER_LOCAL, true);
-  assert.equal(normalizeConfig({ GLADYS_PREFER_LOCAL: false }).GLADYS_PREFER_LOCAL, false);
+test('credentials are trimmed, regions and intervals checked', () => {
+  const config = normalizeConfig({
+    app_id: ' lcabc \n',
+    app_secret: '\tsecret ',
+    region: 'na',
+    alarm_interval: '300',
+    snapshot_interval: '0',
+    allow_disarm: 'true',
+    allow_siren: true,
+    language: 'de',
+  });
+  assert.equal(config.appId, 'lcabc');
+  assert.equal(config.appSecret, 'secret');
+  assert.equal(config.host, 'openapi-or.easy4ip.com');
+  assert.equal(config.alarmIntervalMs, 300_000);
+  assert.equal(config.snapshotIntervalMs, 0);
+  assert.equal(config.allowDisarm, true);
+  assert.equal(config.allowSiren, true);
+  assert.equal(config.language, 'de');
+  const odd = normalizeConfig({ region: 'mars', alarm_interval: '1', language: 'it' });
+  assert.equal(odd.region, 'eu');
+  assert.equal(odd.alarmIntervalMs, 60_000);
+  assert.equal(odd.language, 'fr');
 });

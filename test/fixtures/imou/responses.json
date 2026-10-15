@@ -1,0 +1,125 @@
+{
+  "accessToken_ok": {
+    "result": {
+      "msg": "Operation is successful.",
+      "code": "0",
+      "data": {
+        "expireTime": 190805,
+        "currentDomain": "https://openapi-fk.easy4ip.com:443",
+        "accessToken": "At_0000fakefakefakefakefakefakefa"
+      }
+    },
+    "id": "14"
+  },
+  "accessToken_wrong_app_id": {
+    "result": {
+      "msg": "app ID id null.",
+      "code": "OP1008"
+    },
+    "id": "9"
+  },
+  "accessToken_expired": {
+    "result": {
+      "msg": "Token expired or does not exist, please get token again.",
+      "code": "TK1002"
+    },
+    "id": "24"
+  },
+  "deviceOnline_ok": {
+    "result": {
+      "msg": "Operation is successful.",
+      "code": "0",
+      "data": {
+        "channels": [
+          {
+            "channelId": "0",
+            "onLine": "1"
+          }
+        ],
+        "deviceId": "FAKE0IMOU0PT001",
+        "onLine": "1"
+      }
+    },
+    "id": "8"
+  },
+  "getDeviceCameraStatus_ok": {
+    "result": {
+      "msg": "Operation is successful.",
+      "code": "0",
+      "data": {
+        "enableType": "headerDetect",
+        "status": "on"
+      }
+    },
+    "id": "22"
+  },
+  "setDeviceCameraStatus_ok": {
+    "result": {
+      "msg": "Operation is successful.",
+      "code": "0"
+    },
+    "id": "32"
+  },
+  "deviceStorage_ok": {
+    "result": {
+      "msg": "Operation is successful.",
+      "code": "0",
+      "data": {
+        "totalBytes": 31254904832,
+        "usedBytes": 27553759232
+      }
+    },
+    "id": "28"
+  },
+  "deviceSdcardStatus_ok": {
+    "result": {
+      "msg": "The operation was successful.",
+      "code": "0",
+      "data": {
+        "status": "normal"
+      }
+    },
+    "id": "28"
+  },
+  "controlMovePTZ_ok": {
+    "result": {
+      "msg": "The operation was successful.",
+      "code": "0"
+    },
+    "id": "d5c287b4"
+  },
+  "setDeviceSnapEnhanced_ok": {
+    "result": {
+      "msg": "The operation was successful.",
+      "code": "0",
+      "data": {
+        "url": "https://pictures.imou.test/snap/FAKE0IMOU0PT001/956fe604722b45fba0e098ba6eae3178.jpg?Expires=1603974760&Signature=fake"
+      }
+    },
+    "id": "ad9a278f"
+  },
+  "getDevicePowerInfo_ok": {
+    "id": "b8f45dbb",
+    "result": {
+      "code": "0",
+      "msg": "The operation was successful",
+      "data": {
+        "electricitys": [
+          {
+            "alkElec": "90",
+            "litElec": "90",
+            "electric": "89",
+            "type": "battery"
+          }
+        ]
+      }
+    }
+  },
+  "restartDevice_ok": {
+    "result": {
+      "msg": "The operation was successful.",
+      "code": "0"
+    },
+    "id": "28"
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "result": {
+    "msg": "Operation is successful.",
+    "code": "0",
+    "data": {
+      "count": 8,
+      "deviceList": [
+        {
+          "deviceId": "FAKE0IMOU0PT001",
+          "deviceName": "Salon",
+          "deviceStatus": "online",
+          "brand": "imou",
+          "deviceModel": "IPC-A22EP",
+          "deviceVersion": "2.840.0000000.18.R.230512",
+          "accessType": "PaaS",
+          "channelNum": 1,
+          "deviceAbility": "WLAN,MT,HSEncrypt,CloudStorage,LocalStorage,PlaybackByFilename,BreathingLight,RD,LocalRecord,XUpgrade,Auth,ModifyPassword,LocalStorageEnable,RTSV1,PBSV1,TSV1,ESV1,TimeFormat,Reboot,InfraredLight,AbAlarmSound,SCCode,RDV2,DaySummerTime,WeekSummerTime,TLSEnable,TimingGraphics,TCM,LRRF,CDD,CDDV2,DLS,CDD-OSS,CDD-OBS,CDD-US3,CDD-BOS,CDD-COS,AUTODSTV2,AlarmMD,AudioEncodeControlV2,FrameReverse,RemoteControl,MDW,MDS,HeaderDetect,WifiReport,WideDynamic,CheckAbDecible,CCSC,RQD,CLOUDAIV1,EventFilter,RSRS,WIFI,NVM,CloseCamera,PT1,SmartTrack",
+          "channelList": [
+            {
+              "channelId": "0",
+              "channelName": "Salon",
+              "channelStatus": "online",
+              "channelAbility": "AlarmMD,HeaderDetect,CloseCamera,PT1,MDS,MDW"
+            }
+          ]
+        },
+        {
+          "deviceId": "FAKE0IMOU0FL002",
+          "deviceName": "Allée",
+          "deviceStatus": "online",
+          "brand": "imou",
+          "deviceModel": "IPC-F42FEP",
+          "deviceVersion": "2.680.0000000.25.R.220527",
+          "accessType": "PaaS",
+          "channelNum": 1,
+          "deviceAbility": "WLAN,Siren,MT,HSEncrypt,CloudStorage,LocalStorage,PlaybackByFilename,BreathingLight,RD,LocalRecord,XUpgrade,Auth,ModifyPassword,LocalStorageEnable,RTSV1,PBSV1,TSV1,ESV1,TimeFormat,Reboot,InfraredLight,AbAlarmSound,SCCode,RDV2,DaySummerTime,WeekSummerTime,TLSEnable,TimingGraphics,TCM,LRRF,CDD,CDDV2,DLS,CDD-OSS,CDD-OBS,CDD-US3,CDD-BOS,CDD-COS,AUTODSTV2,AlarmMD,AudioEncodeControlV2,FrameReverse,RemoteControl,MDW,MDS,HeaderDetect,WifiReport,WideDynamic,CheckAbDecible,CCSC,RQD,CLOUDAIV1,EventFilter,RSRS,WIFI,NVM,WhiteLight,LinkageSiren",
+          "channelList": [
+            {
+              "channelId": 0,
+              "channelName": "Allée",
+              "channelStatus": "online",
+              "channelAbility": "AlarmMD,HeaderDetect,WhiteLight"
+            }
+          ]
+        },
+        {
+          "deviceId": "FAKE0IMOU0BT003",
+          "deviceName": "Jardin",
+          "deviceStatus": "sleep",
+          "brand": "imou",
+          "deviceModel": "IPC-B46LP",
+          "deviceVersion": "2.800.0000000.3.R.230301",
+          "accessType": "PaaS",
+          "channelNum": 1,
+          "deviceAbility": "WLAN,MT,CloudStorage,LocalStorage,Dormant,Electric,AlarmPIRV2,AiHuman,RTSV1,PBSV1,TSV1,Reboot,WIFI",
+          "channelList": [
+            {
+              "channelId": "0",
+              "channelName": "Jardin",
+              "channelStatus": "sleep",
+              "channelAbility": "AlarmPIRV2,AiHuman"
+            }
+          ]
+        },
+        {
+          "deviceId": "FAKE0IMOU0DB004",
+          "deviceName": "Entrée",
+          "deviceStatus": "online",
+          "brand": "imou",
+          "deviceModel": "DB61i",
+          "deviceVersion": "2.760.0000000.6.R.221020",
+          "accessType": "PaaS",
+          "channelNum": 1,
+          "deviceAbility": "WLAN,MT,CloudStorage,LocalStorage,CallAbility,CAV2,AlarmMD,HeaderDetect,RTSV1,PBSV1,TSV1,Reboot,WIFI",
+          "channelList": [
+            {
+              "channelId": "0",
+              "channelName": "Entrée",
+              "channelStatus": "online",
+              "channelAbility": "AlarmMD,HeaderDetect"
+            }
+          ]
+        },
+        {
+          "deviceId": "FAKE0IMOU0OF005",
+          "deviceName": "Garage",
+          "deviceStatus": "offline",
+          "brand": "imou",
+          "deviceModel": "IPC-C22C",
+          "deviceVersion": "2.680.0000000.25.R.220527",
+          "accessType": "PaaS",
+          "channelNum": 1,
+          "deviceAbility": "WLAN,Siren,MT,HSEncrypt,CloudStorage,LocalStorage,PlaybackByFilename,BreathingLight,RD,LocalRecord,XUpgrade,Auth,ModifyPassword,LocalStorageEnable,RTSV1,PBSV1,TSV1,ESV1,TimeFormat,Reboot,InfraredLight,AbAlarmSound,SCCode,RDV2,DaySummerTime,WeekSummerTime,TLSEnable,TimingGraphics,TCM,LRRF,CDD,CDDV2,DLS,CDD-OSS,CDD-OBS,CDD-US3,CDD-BOS,CDD-COS,AUTODSTV2,AlarmMD,AudioEncodeControlV2,FrameReverse,RemoteControl,MDW,MDS,HeaderDetect,WifiReport,WideDynamic,CheckAbDecible,CCSC,RQD,CLOUDAIV1,EventFilter,RSRS,WIFI,NVM",
+          "channelList": [
+            {
+              "channelId": "0",
+              "channelName": "Garage",
+              "channelStatus": "offline",
+              "channelAbility": ""
+            }
+          ]
+        },
+        {
+          "deviceId": "FAKE0IMOU0DL006",
+          "deviceName": "Cruiser Dual",
+          "deviceStatus": "online",
+          "brand": "imou",
+          "deviceModel": "IPC-S7XP-10M0WED",
+          "deviceVersion": "2.880.0000000.2.R.240110",
+          "accessType": "PaaS",
+          "channelNum": 2,
+          "deviceAbility": "WLAN,MT,CloudStorage,LocalStorage,AlarmMD,SMDH,WhiteLight,Siren,RTSV1,PBSV1,TSV1,Reboot,WIFI",
+          "channelList": [
+            {
+              "channelId": 0,
+              "channelName": "Rue",
+              "channelStatus": "online",
+              "channelAbility": "PTZ,AlarmMD,SMDH"
+            },
+            {
+              "channelId": 1,
+              "channelName": "",
+              "channelStatus": "online",
+              "channelAbility": "AlarmMD"
+            }
+          ]
+        },
+        {
+          "deviceId": "FAKE0IMOU0IT007",
+          "deviceName": "Cour",
+          "deviceStatus": "online",
+          "brand": "imou",
+          "deviceModel": "IPC-K7FP",
+          "deviceVersion": "1.0.0",
+          "accessType": "IoT",
+          "productId": "FAKEPRODUCT1",
+          "channelNum": 1,
+          "deviceAbility": "",
+          "channelList": [
+            {
+              "channelId": 0,
+              "channelName": "Cour",
+              "channelStatus": "online",
+              "channelAbility": ""
+            }
+          ]
+        },
+        {
+          "deviceId": "FAKE0IMOU0AC008",
+          "deviceName": "Détecteur porte",
+          "deviceStatus": "online",
+          "brand": "imou",
+          "deviceModel": "ZD1",
+          "productId": "FAKEPRODUCT2",
+          "parentDeviceId": "FAKE0IMOU0GW009",
+          "parentProductId": "FAKEPRODUCT3",
+          "deviceAbility": ""
+        }
+      ]
+    }
+  },
+  "id": "fixture"
+}

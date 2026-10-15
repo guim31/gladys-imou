@@ -1,77 +1,135 @@
+// -----------------------------------------------------------------------------
+// The `imou` dashboard widget: valid content within the core budget, images it
+// can serve, the privacy buttons and their safety gate, the toasts.
+// -----------------------------------------------------------------------------
+
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateWidgetContent } from '@gladysassistant/integration-sdk';
-import { createFakeGladys } from '@gladysassistant/integration-sdk/testing';
-import { buildDiscoveredDevices } from '../src/devices/index.js';
-import { simulateLanSession } from '../src/devices/plug.js';
-import { DEMO_STATUS_WIDGET, WIDGETS, refreshWidgets } from '../src/widgets.js';
-import { normalizeConfig } from '../src/config.js';
+import { validateWidgetContent, validateWidgetImage } from '@gladysassistant/integration-sdk';
+import { WIDGET_KEY } from '../src/hub.js';
+import { BASE_CONFIG, KEYS, cameraIds, createAll, createWorld } from './helpers/world.js';
 
-const gladys = createFakeGladys();
-const config = normalizeConfig();
-const demoStatus = WIDGETS[DEMO_STATUS_WIDGET];
+async function world(t, options = {}) {
+  const w = await createWorld(options);
+  t.after(() => w.app.stop());
+  await createAll(w);
+  return w;
+}
 
-// What the SDK passes to onWidgetGet, plus the config index.js adds.
-const getContent = (cfg = config) =>
-  demoStatus.get(gladys, { settings: {}, language: 'en', units: 'metric', config: cfg });
+const content = async (w, settings = {}, language = 'en') => {
+  const ack = await w.fake.widgetGet(WIDGET_KEY, { settings, language });
+  assert.equal(ack.success, true, ack.error);
+  return ack.data.content;
+};
 
-test('the demo_status content is rendered exactly as sent', async () => {
-  // [] = nothing the core would drop, truncate or trim to the content budget.
-  assert.deepEqual(validateWidgetContent(await getContent()), []);
-});
+const buttons = (c) => c.components.filter((component) => component.type === 'button');
 
-test('the degraded plug connection content is valid too', async () => {
-  simulateLanSession(false);
-  try {
-    const content = await getContent();
-    assert.deepEqual(validateWidgetContent(content), []);
-    const status = content.components.find((component) => component.type === 'status');
-    assert.ok(
-      status.items.some((item) => item.color === 'warning'),
-      'degraded shows a warning',
-    );
-  } finally {
-    simulateLanSession(true);
+test('every content is valid, in every language, for every choice of cameras', async (t) => {
+  const w = await world(t);
+  w.cloud.addAlarm(KEYS.FLOODLIGHT, { at: w.clock.now(), msgType: 'human' });
+  await w.hub.checkAlarms();
+  const choices = [
+    {},
+    ...w.fake.discoveredDevices.map((device) => ({ cameras: [device.external_id] })),
+  ];
+  for (const settings of choices) {
+    for (const language of ['en', 'fr', 'de', 'es']) {
+      const c = await content(w, settings, language);
+      assert.deepEqual(validateWidgetContent(c), [], JSON.stringify(settings));
+      for (const image of c.components.filter((component) => component.type === 'image')) {
+        const ack = await w.fake.widgetGetImage(image.key);
+        assert.equal(ack.success, true);
+        assert.deepEqual(validateWidgetImage(ack.data.image), []);
+      }
+    }
   }
 });
 
-test('the live tiles reference features the integration publishes', async () => {
-  const featureIds = new Set(
-    buildDiscoveredDevices(gladys, config).flatMap((device) =>
-      device.features.map((feature) => feature.external_id),
-    ),
+test('all cameras: the newest image, one row per camera, no button', async (t) => {
+  const w = await world(t);
+  w.cloud.addAlarm(KEYS.PT, { at: w.clock.now(), msgType: 'human' });
+  await w.hub.checkAlarms();
+  const c = await content(w);
+  assert.equal(c.components[0].type, 'image');
+  const status = c.components.find((component) => component.type === 'status');
+  assert.equal(status.items.length, 8);
+  assert.deepEqual(status.items[0], {
+    label: 'Salon',
+    icon: 'eye-off',
+    value: 'Privacy mode',
+    color: 'neutral',
+  });
+  assert.deepEqual(buttons(c), []);
+});
+
+test('one private camera: "Resume watching" uncovers it, always allowed', async (t) => {
+  const w = await world(t, { config: { ...BASE_CONFIG, allow_disarm: false } });
+  const id = cameraIds(w.gladys, KEYS.PT).device;
+  const [resume] = buttons(await content(w, { cameras: [id] }));
+  assert.equal(resume.action.key, 'privacy_off');
+  const ack = await w.fake.widgetAction(WIDGET_KEY, resume.action.key, resume.action.params, {
+    settings: { cameras: [id] },
+  });
+  assert.equal(ack.success, true);
+  assert.equal(ack.data.message.en, 'Salon: surveillance resumed');
+  assert.equal(w.cloud.getSwitch(KEYS.PT, '0', 'closeCamera'), false);
+  // Back to watching: a new image, and no privacy button while not allowed.
+  assert.deepEqual(
+    buttons(await content(w, { cameras: [id] })).map((button) => button.action.key),
+    ['refresh'],
   );
-  const liveTiles = (await getContent()).components.filter((c) => c.device_feature);
-  assert.ok(liveTiles.length > 0, 'the template demonstrates a device-bound tile');
-  for (const tile of liveTiles) {
-    assert.ok(featureIds.has(tile.device_feature), `unknown feature ${tile.device_feature}`);
-  }
 });
 
-test('every button action of the content is handled and answers a short toast', async () => {
-  const buttons = (await getContent()).components.filter((c) => c.type === 'button' && c.action);
-  assert.ok(buttons.length > 0, 'the template demonstrates a widget action');
-  for (const { action } of buttons) {
-    const message = await demoStatus.action(gladys, {
-      actionKey: action.key,
-      params: action.params ?? {},
-      settings: {},
-      config,
-    });
-    assert.ok(message.en, 'the toast carries at least the mandatory `en` text');
-    assert.ok(message.en.length <= 200, 'toasts are capped at 200 characters');
-  }
-});
-
-test('an unknown widget action fails, so the user sees the error', async () => {
-  await assert.rejects(
-    demoStatus.action(gladys, { actionKey: 'unknown', params: {}, settings: {}, config }),
-    /Unknown widget action/,
+test('privacy mode from the widget only when allowed, and after a confirmation', async (t) => {
+  const w = await world(t);
+  const id = cameraIds(w.gladys, KEYS.PT).device;
+  w.cloud.setSwitch(KEYS.PT, '0', 'closeCamera', false);
+  await w.hub.refresh({ switches: true });
+  const c = await content(w, { cameras: [id] });
+  const keys = buttons(c).map((button) => button.action.key);
+  assert.deepEqual(keys, ['refresh', 'privacy_on']);
+  const cover = buttons(c)[1];
+  assert.equal(cover.action.confirm, true);
+  const ack = await w.fake.widgetAction(WIDGET_KEY, cover.action.key, cover.action.params, {
+    settings: { cameras: [id] },
+  });
+  assert.equal(ack.data.message.fr, 'Salon: mode privé activé');
+  assert.equal(w.cloud.getSwitch(KEYS.PT, '0', 'closeCamera'), true);
+  // A forged tap without the permission is refused by the hub too.
+  const safe = await world(t, { config: { ...BASE_CONFIG, allow_disarm: false } });
+  const refused = await safe.fake.widgetAction(
+    WIDGET_KEY,
+    'privacy_on',
+    { camera: cameraIds(safe.gladys, KEYS.PT).device, privacy: true },
+    { settings: {} },
   );
+  assert.equal(refused.success, false);
+  assert.match(refused.error, /Allow turning surveillance off/);
 });
 
-test('refreshWidgets nudges every widget', () => {
-  const fresh = createFakeGladys();
-  refreshWidgets(fresh);
-  assert.deepEqual(fresh.fake.widgetRefreshes, Object.keys(WIDGETS));
+test('"New image" takes a capture and shows it', async (t) => {
+  const w = await world(t);
+  const id = cameraIds(w.gladys, KEYS.DOORBELL).device;
+  const [refresh] = buttons(await content(w, { cameras: [id] }));
+  const before = w.cloud.calls('setDeviceSnapEnhanced').length;
+  w.clock.advance(60_000);
+  const ack = await w.fake.widgetAction(WIDGET_KEY, 'refresh', refresh.action.params, {
+    settings: { cameras: [id] },
+  });
+  assert.equal(ack.data.message.de, 'Entrée: neues Bild');
+  assert.equal(w.cloud.calls('setDeviceSnapEnhanced').length, before + 1);
+  assert.equal((await content(w, { cameras: [id] })).components[0].type, 'image');
+});
+
+test('not configured, unknown camera, cloud refused: a plain message or a caption', async (t) => {
+  const empty = await world(t, { config: { ...BASE_CONFIG, app_id: '' } });
+  assert.match((await content(empty, {}, 'es')).components[0].text, /AppId/);
+  const w = await world(t);
+  assert.match((await content(w, { cameras: ['ext:gone'] })).components[0].text, /no longer/);
+  w.cloud.quotaUsed = true;
+  await w.hub.checkAlarms();
+  const c = await content(w);
+  assert.equal(c.components[0].type, 'text');
+  assert.match(c.components[0].text, /quota/);
+  assert.deepEqual(validateWidgetContent(c), []);
 });

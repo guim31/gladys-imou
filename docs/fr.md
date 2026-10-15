@@ -1,67 +1,152 @@
-# Template de démonstration
+# Imou Life
 
-Ceci est la documentation utilisateur de l'intégration. Gladys ré-héberge ce
-fichier et affiche un lien **Documentation** permanent vers lui dans l'écran
-de configuration (dans la langue de l'utilisateur, avec l'anglais en repli) —
-c'est au moment de configurer que l'utilisateur en a le plus besoin. Gardez
-les courtes indications d'accueil dans les blocs `section` du `config_schema`
-du manifest ; mettez ici le pas-à-pas détaillé (captures d'écran, dépannage…).
+Les caméras et sonnettes Imou (Ranger, Cruiser, Bullet, Cell, Versa, sonnettes…) dans Gladys, via l’**API ouverte
+officielle d’Imou** (open.imoulife.com) : images des caméras, détection de mouvement et de personne, sonnette, mode
+privé, détection de mouvement, projecteur, sirène, orientation, batterie et carte SD.
 
-## Ce que vous obtenez
+> **Développée sans le matériel : vos retours sont les bienvenus.** Cette intégration a été écrite d’après la
+> documentation d’Imou et les bibliothèques Imou open source, sans caméra Imou ni compte développeur Imou sous la
+> main. Si quelque chose ne marche pas avec votre modèle, ouvrez un ticket :
+> https://github.com/guim31/gladys-imou/issues
 
-Six appareils de démonstration apparaissent après l'installation : une
-station météo (vraies données Open-Meteo), un interrupteur, une lampe
-variable, une prise connectée avec mesure de puissance, un détecteur de
-mouvement et une caméra.
+Cette intégration n’est pas affiliée à Imou ni à Dahua.
+
+## Prérequis
+
+- Gladys Assistant 5.1 ou plus récent (les flèches d’orientation du tableau de bord demandent Gladys 5.2).
+- Vos caméras ajoutées dans l’app **Imou Life**.
+- Un **compte développeur Imou** gratuit, pour obtenir un AppId et un AppSecret :
+  1. Allez sur [open.imoulife.com](https://open.imoulife.com) et inscrivez-vous **avec le même identifiant que
+     l’app Imou Life** (Gladys voit les caméras de ce compte).
+  2. Ouvrez la console, **My App** → **App Information**, cliquez sur **Edit**, remplissez les champs demandés et
+     enregistrez.
+  3. Copiez l’**AppId** et l’**AppSecret** affichés sur cette page.
+- Gladys a besoin d’Internet : tout passe par le cloud Imou.
 
 ## Configuration
 
-1. Ouvrez l'onglet **Configuration** de l'intégration.
-2. Renseignez la **latitude** et la **longitude** que la station météo de
-   démonstration doit observer (Paris par défaut), et choisissez votre unité
-   de température. L'**intervalle de rafraîchissement** règle la fréquence
-   de lecture de la station météo et de la puissance de la prise : toutes
-   les 5 minutes par défaut, toutes les minutes au plus.
-3. Enregistrez : les appareils apparaissent dans l'onglet **Découverte**,
-   prêts à être ajoutés.
+Dans Gladys, **Intégrations → Imou Life → Configuration** :
 
-Le réglage **Préférer la connexion locale** pilote la prise de
-démonstration : elle affiche en badge le canal réellement utilisé (local ou
-cloud), avec un point orange quand elle fonctionne en mode dégradé (local
-refusé, bascule cloud).
+| Réglage                                     | Ce qu’il fait                                                                                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **AppId**                                   | L’AppId de votre application développeur.                                                               |
+| **AppSecret**                               | Son AppSecret. Il ne sert qu’à signer les requêtes : jamais envoyé, jamais écrit dans les logs.         |
+| **Centre de données**                       | Où vit votre compte Imou : Europe (par défaut), Asie-Pacifique, Amériques ou Chine.                     |
+| **Relève des alarmes**                      | Fréquence de lecture des alarmes de chaque caméra (de 30 secondes à 10 minutes, 1 minute par défaut).   |
+| **Images des caméras**                      | Fréquence d’une capture neuve des caméras sur secteur (15 minutes par défaut).                          |
+| **Autoriser la coupure de la surveillance** | Permet aux scènes et au widget de couper la détection ou d’activer le mode privé. Désactivé par défaut. |
+| **Autoriser la sirène**                     | Ajoute un interrupteur de sirène aux caméras qui en ont une. Désactivé par défaut.                      |
+| **Langue des noms**                         | Langue des noms de fonctionnalités et des textes envoyés aux scènes (français par défaut).              |
 
-## Actions
+Puis **Tester la connexion** : le résultat dit combien de caméras Imou a renvoyées et environ combien d’appels par
+jour coûtent vos réglages. Les caméras apparaissent dans l’onglet **Découverte** : ajoutez celles que vous voulez.
+Seules les caméras ajoutées à Gladys sont lues.
 
-- **Tester le fournisseur météo** — effectue une requête en direct vers
-  Open-Meteo et affiche la température et l'humidité actuelles sous le
-  bouton.
-- **Identifier un appareil** — choisissez un de vos appareils dans la liste
-  et il se signale (la lampe de démonstration « clignote » dans les logs).
+## Appareils
 
-## Scènes
+Un appareil Gladys par caméra (un par objectif d’une caméra à double objectif ou par canal d’un enregistreur),
+identifié par son numéro de série Imou. Chaque caméra n’a que les fonctionnalités qu’elle possède :
 
-L'intégration ajoute ses propres cartes à l'éditeur de scènes (Gladys 5.1
-ou plus récent), dans la catégorie **Intégrations** :
+| Fonctionnalité                  | Ce qu’elle montre                                                                                         |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Image**                       | La dernière capture ou image d’alarme, affichée par la boîte caméra du tableau de bord.                   |
+| **Orientation**                 | Flèches (et zoom) des caméras motorisées : chaque appui est un petit pas, la caméra s’arrête d’elle-même. |
+| **Mouvement**                   | 1 pendant une minute après une détection (personnes comprises).                                           |
+| **Personne**                    | 1 pendant une minute après que la caméra a détecté une personne.                                          |
+| **Sonnette**                    | Sonnettes : 1 puis 0 quand quelqu’un sonne.                                                               |
+| **Dernier événement**           | « Personne · 18:32 ».                                                                                     |
+| **En ligne**                    | La caméra répond au cloud Imou. Une caméra sur batterie en veille est en ligne.                           |
+| **Détection de mouvement**      | Si la détection de mouvement est active. Lecture seule : voir Actions de scène.                           |
+| **Mode privé**                  | Si l’objectif est masqué. Lecture seule : voir Actions de scène.                                          |
+| **Projecteur**                  | Le projecteur des caméras qui en ont un : marche/arrêt depuis Gladys.                                     |
+| **Sirène**                      | Seulement si **Autoriser la sirène** est coché.                                                           |
+| **Batterie**                    | Caméras sur batterie, en %.                                                                               |
+| **Carte SD**                    | Normale, pas de carte, formatage en cours, erreur.                                                        |
+| **Taille de la carte SD**       | En Go.                                                                                                    |
+| **Espace libre de la carte SD** | En Go (0 sans carte).                                                                                     |
 
-- **Mouvement détecté** (déclencheur) — lance la scène quand un détecteur
-  de démonstration voit bouger quelque chose. Choisissez éventuellement le
-  détecteur et ce qui a bougé (personne, animal) ; laissés vides, toute
-  détection correspond. Les actions suivantes peuvent lire ce qui a bougé
-  avec `{{triggerEvent.data.target}}`.
-- **Identifier un appareil** (action) — fait se signaler l'appareil choisi.
-  Elle indique si l'appareil a pu se signaler, pour que les actions
-  suivantes puissent en dépendre.
+La **Détection de mouvement** et le **Mode privé** sont affichés, jamais proposés comme interrupteurs : les couper
+par erreur (un assistant vocal, une scène « tout éteindre ») laisserait la maison sans surveillance. Ils se changent
+par les actions de scène et le widget.
 
-## Tableau de bord
+## Rafraîchissement et quota
 
-Ajoutez le widget **État de la démo** à un tableau de bord : il affiche en
-direct la température de la station météo et la puissance de la prise du
-bureau, la connexion utilisée par la prise (en orange si dégradée) et la
-position observée. Son bouton **Identifier la lampe** fait se signaler la
-lampe de démonstration.
+Gladys n’interroge pas ces caméras : l’intégration lit le cloud Imou sur ses propres minuteurs.
+
+- La liste des appareils (un appel pour toutes les caméras) toutes les 10 minutes : noms, état en ligne.
+- Les alarmes de chaque caméra ajoutée à Gladys à l’intervalle de **Relève des alarmes** : un appel par caméra.
+- Détection de mouvement, mode privé et projecteur toutes les 30 minutes, batterie et carte SD toutes les heures,
+  et juste après une commande.
+- Une capture de chaque caméra sur secteur à l’intervalle d’**Images des caméras**. Les caméras sur batterie ne
+  sont jamais réveillées par ce minuteur.
+
+Chaque appel compte dans le quota de votre compte développeur Imou. Avec les réglages par défaut, une caméra sur
+secteur coûte environ 1 700 appels par jour (dont 1 440 pour les alarmes) : espacez la **Relève des alarmes** pour
+économiser. Imou fait évoluer les limites de son offre gratuite : consultez-les dans **My Resources** de la
+console. Quand Imou répond que le quota est épuisé, toutes les lectures s’arrêtent une heure et la page de
+configuration l’indique.
+
+## Widget
+
+**Caméras Imou** montre la dernière image des caméras choisies (toutes par défaut), une ligne par caméra (mode
+privé, dernier événement, en ligne, en veille ou hors ligne) et, quand il montre une seule caméra, un bouton
+**Nouvelle image** et le mode privé : **Reprendre** toujours, **Mode privé** seulement si **Autoriser la coupure
+de la surveillance** est coché, après confirmation.
+
+## Déclencheurs de scène
+
+- **Mouvement détecté par une caméra Imou** : toute détection, personnes comprises. Filtres : caméra, ce qui est
+  détecté (mouvement, personne). Variables : nom de la caméra, ce qui est détecté.
+- **Personne détectée par une caméra Imou** : la détection humaine de la caméra a vu quelqu’un. Variable : nom de
+  la caméra.
+- **Quelqu’un sonne à une sonnette Imou** : filtre : sonnette. Variable : nom de la sonnette.
+
+L’image de la caméra est mise à jour avant le déclenchement : « envoyer l’image de la caméra » envoie l’image de
+l’événement. Les événements sont lus à l’intervalle de **Relève des alarmes** : comptez jusqu’à ce délai.
+
+## Actions de scène
+
+- **Rafraîchir l’image d’une caméra Imou** : une capture tout de suite.
+- **Orienter une caméra Imou** : un pas à gauche, à droite, en haut, en bas, zoom avant ou arrière.
+- **Mode privé d’une caméra Imou** : activé (objectif masqué) ou désactivé (caméra active). Activé demande
+  **Autoriser la coupure de la surveillance**.
+- **Détection de mouvement d’une caméra Imou** : activée ou désactivée. Désactivée demande **Autoriser la coupure
+  de la surveillance**.
+
+## Exemples de scènes
+
+- Quand une **Personne détectée par une caméra Imou** vient de la caméra de l’allée la nuit : allumer l’éclairage
+  extérieur et envoyer son image par message.
+- Quand **Quelqu’un sonne à une sonnette Imou** : envoyer l’image de la sonnette à la famille et l’annoncer sur les
+  enceintes.
+- Quand la dernière personne quitte la maison : **Mode privé d’une caméra Imou** désactivé pour les caméras
+  intérieures ; au retour (si la coupure de la surveillance est autorisée) : activé.
 
 ## Dépannage
 
-L'intégration journalise tout ce qu'elle fait : consultez les logs de
-l'intégration depuis l'interface Gladys (ou `docker logs` sur l'hôte) avec
-`LOG_LEVEL=debug` pour le détail complet.
+- **« Imou a refusé l’AppId ou l’AppSecret »** : recopiez-les depuis **My App**, et vérifiez le **Centre de
+  données** de votre compte.
+- **Aucune caméra trouvée** : le compte développeur doit utiliser le même identifiant que l’app Imou Life. Une
+  caméra partagée n’apparaît que partagée avec le droit de commande.
+- **« Au-delà de la limite d’appareils de l’offre gratuite »** : l’offre développeur gratuite d’Imou pilote un
+  nombre limité d’appareils. Gardez sur ce compte les caméras utiles, ou partagez les autres vers un second compte
+  avec son propre AppId.
+- **Quota épuisé** : espacez la **Relève des alarmes** et les **Images des caméras**, ou ajoutez moins de caméras.
+- **Pas d’image** : la caméra est hors ligne, en veille ou en mode privé. Certains modèles chiffrent leurs images
+  d’alarme : l’intégration prend alors une capture des caméras sur secteur.
+- Logs : **Intégrations → Imou Life → Logs**. `LOG_LEVEL=debug` montre chaque lecture. L’AppSecret, l’AppId, les
+  jetons et les adresses d’images ne sont jamais écrits.
+
+## Limites
+
+- Cloud seulement : le cloud Imou et l’accès à Internet sont nécessaires. Imou ne peut pas pousser les événements
+  vers Gladys (son push demande une adresse publique) : les alarmes sont lues à chaque **Relève des alarmes**, une
+  scène démarre donc jusqu’à ce délai après l’événement.
+- Pas de vidéo en direct : le tableau de bord montre la dernière image.
+- Les caméras de la nouvelle plateforme Imou (signalées par **Tester la connexion**) n’ont que l’image, les
+  alarmes et l’état en ligne.
+- Les caméras sur batterie ne sont pas capturées sur minuteur (chaque capture les réveillerait) et leur carte SD
+  n’est pas lue.
+- La détection de personne, la sonnette et les capacités viennent de la documentation d’Imou, pas d’essais sur de
+  vraies caméras : vos retours sont les bienvenus.
+- Développée sans le matériel ni compte Imou ; pas affiliée à Imou ni à Dahua.
