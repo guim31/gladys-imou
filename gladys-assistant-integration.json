@@ -1,177 +1,816 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "Imou Life",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "Imou cameras through the official Imou Open API: images, motion, people, doorbell, privacy mode.",
+    "fr": "Caméras Imou via l’API ouverte officielle : images, mouvements, personnes, sonnette, mode privé.",
+    "de": "Imou-Kameras über die offizielle Imou Open API: Bilder, Bewegung, Personen, Klingel, Privatsphäre.",
+    "es": "Cámaras Imou con la API abierta oficial de Imou: imágenes, movimiento, personas, timbre, privacidad."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
+  "docker_image": "ghcr.io/guim31/gladys-imou:1.0.0",
   "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-imou/main/cover.png",
+  "categories": ["security"],
+  "transports": ["cloud"],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Your Imou developer application",
+        "fr": "Votre application développeur Imou",
+        "de": "Deine Imou-Entwickleranwendung",
+        "es": "Su aplicación de desarrollador Imou"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Gladys reads your cameras through the official Imou Open API. Create a free developer account on open.imoulife.com with the login of the Imou Life app, then copy the AppId and AppSecret of \"My App\".",
+        "fr": "Gladys lit vos caméras via l’API ouverte officielle d’Imou. Créez un compte développeur gratuit sur open.imoulife.com avec l’identifiant de l’app Imou Life, puis copiez l’AppId et l’AppSecret de « My App ».",
+        "de": "Gladys liest deine Kameras über die offizielle Imou Open API. Lege mit der Anmeldung der Imou-Life-App ein kostenloses Entwicklerkonto auf open.imoulife.com an und kopiere AppId und AppSecret unter „My App“.",
+        "es": "Gladys lee sus cámaras con la API abierta oficial de Imou. Cree una cuenta de desarrollador gratuita en open.imoulife.com con el usuario de la app Imou Life y copie el AppId y el AppSecret de «My App»."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://open.imoulife.com/consoleNew/myApp/appInfo",
+          "label": {
+            "en": "Imou developer console",
+            "fr": "Console développeur Imou",
+            "de": "Imou-Entwicklerkonsole",
+            "es": "Consola de desarrollador Imou"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "app_id",
+      "type": "string",
+      "label": {
+        "en": "AppId",
+        "fr": "AppId",
+        "de": "AppId",
+        "es": "AppId"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
+      "description": {
+        "en": "\"My App\" page of the Imou developer console.",
+        "fr": "Page « My App » de la console développeur Imou.",
+        "de": "Seite „My App“ der Imou-Entwicklerkonsole.",
+        "es": "Página «My App» de la consola de desarrollador Imou."
+      },
+      "placeholder": {
+        "en": "e.g. lc1a2b3c4d5e6f7g8",
+        "fr": "ex. lc1a2b3c4d5e6f7g8",
+        "de": "z. B. lc1a2b3c4d5e6f7g8",
+        "es": "p. ej. lc1a2b3c4d5e6f7g8"
+      },
       "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
+      "default": ""
     },
     {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
-      "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+      "key": "app_secret",
+      "type": "secret",
+      "label": {
+        "en": "AppSecret",
+        "fr": "AppSecret",
+        "de": "AppSecret",
+        "es": "AppSecret"
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
+      "description": {
+        "en": "Signs the requests: it is never sent nor written to the logs.",
+        "fr": "Signe les requêtes : il n’est jamais envoyé ni écrit dans les logs.",
+        "de": "Signiert die Anfragen: Es wird nie gesendet oder in die Protokolle geschrieben.",
+        "es": "Firma las peticiones: nunca se envía ni se escribe en los registros."
+      },
+      "required": true
     },
     {
-      "key": "unit",
+      "key": "region",
       "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "label": {
+        "en": "Data centre",
+        "fr": "Centre de données",
+        "de": "Rechenzentrum",
+        "es": "Centro de datos"
+      },
+      "description": {
+        "en": "Where your Imou account lives. Europe for an account created in Europe.",
+        "fr": "Où vit votre compte Imou. Europe pour un compte créé en Europe.",
+        "de": "Wo dein Imou-Konto liegt. Europa für ein in Europa angelegtes Konto.",
+        "es": "Dónde está su cuenta Imou. Europa para una cuenta creada en Europa."
+      },
       "required": false,
-      "default": "celsius",
+      "default": "eu",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        {
+          "value": "eu",
+          "label": {
+            "en": "Europe",
+            "fr": "Europe",
+            "de": "Europa",
+            "es": "Europa"
+          }
+        },
+        {
+          "value": "sg",
+          "label": {
+            "en": "Asia-Pacific",
+            "fr": "Asie-Pacifique",
+            "de": "Asien-Pazifik",
+            "es": "Asia-Pacífico"
+          }
+        },
+        {
+          "value": "na",
+          "label": {
+            "en": "Americas",
+            "fr": "Amériques",
+            "de": "Amerika",
+            "es": "América"
+          }
+        },
+        {
+          "value": "cn",
+          "label": {
+            "en": "China",
+            "fr": "Chine",
+            "de": "China",
+            "es": "China"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "key": "alarm_interval",
+      "type": "select",
+      "label": {
+        "en": "Alarm check",
+        "fr": "Relève des alarmes",
+        "de": "Alarmabfrage",
+        "es": "Consulta de alarmas"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "How often the alarms of each camera are read: one Imou call per camera each time, counted in the quota of your developer account.",
+        "fr": "Fréquence de lecture des alarmes de chaque caméra : un appel Imou par caméra à chaque fois, compté dans le quota de votre compte développeur.",
+        "de": "Wie oft die Alarme jeder Kamera gelesen werden: jedes Mal ein Imou-Aufruf pro Kamera, der im Kontingent deines Entwicklerkontos zählt.",
+        "es": "Frecuencia de lectura de las alarmas de cada cámara: una llamada a Imou por cámara cada vez, contada en la cuota de su cuenta de desarrollador."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "60",
+      "options": [
+        {
+          "value": "30",
+          "label": {
+            "en": "Every 30 seconds",
+            "fr": "Toutes les 30 secondes",
+            "de": "Alle 30 Sekunden",
+            "es": "Cada 30 segundos"
+          }
+        },
+        {
+          "value": "60",
+          "label": {
+            "en": "Every minute",
+            "fr": "Chaque minute",
+            "de": "Jede Minute",
+            "es": "Cada minuto"
+          }
+        },
+        {
+          "value": "120",
+          "label": {
+            "en": "Every 2 minutes",
+            "fr": "Toutes les 2 minutes",
+            "de": "Alle 2 Minuten",
+            "es": "Cada 2 minutos"
+          }
+        },
+        {
+          "value": "300",
+          "label": {
+            "en": "Every 5 minutes",
+            "fr": "Toutes les 5 minutes",
+            "de": "Alle 5 Minuten",
+            "es": "Cada 5 minutos"
+          }
+        },
+        {
+          "value": "600",
+          "label": {
+            "en": "Every 10 minutes",
+            "fr": "Toutes les 10 minutes",
+            "de": "Alle 10 Minuten",
+            "es": "Cada 10 minutos"
+          }
+        }
+      ]
+    },
+    {
+      "key": "snapshot_interval",
+      "type": "select",
+      "label": {
+        "en": "Camera images",
+        "fr": "Images des caméras",
+        "de": "Kamerabilder",
+        "es": "Imágenes de las cámaras"
+      },
+      "description": {
+        "en": "How often a fresh picture of the mains-powered cameras is taken: the camera box of the dashboard shows it. Battery cameras: only on alarm.",
+        "fr": "Fréquence d’une capture neuve des caméras sur secteur : c’est elle qu’affiche la boîte caméra du tableau de bord. Sur batterie : seulement à l’alarme.",
+        "de": "Wie oft ein neues Bild der Kameras mit Netzteil aufgenommen wird: Die Kamerabox des Dashboards zeigt es. Akkukameras: nur bei Alarm.",
+        "es": "Frecuencia de una captura nueva de las cámaras con corriente: es la que muestra la caja de cámara del panel. Con batería: solo al alarmar."
+      },
+      "required": false,
+      "default": "15",
+      "options": [
+        {
+          "value": "0",
+          "label": {
+            "en": "Only on alarm",
+            "fr": "Seulement à l’alarme",
+            "de": "Nur bei Alarm",
+            "es": "Solo al alarmar"
+          }
+        },
+        {
+          "value": "5",
+          "label": {
+            "en": "Every 5 minutes",
+            "fr": "Toutes les 5 minutes",
+            "de": "Alle 5 Minuten",
+            "es": "Cada 5 minutos"
+          }
+        },
+        {
+          "value": "15",
+          "label": {
+            "en": "Every 15 minutes",
+            "fr": "Toutes les 15 minutes",
+            "de": "Alle 15 Minuten",
+            "es": "Cada 15 minutos"
+          }
+        },
+        {
+          "value": "60",
+          "label": {
+            "en": "Every hour",
+            "fr": "Toutes les heures",
+            "de": "Jede Stunde",
+            "es": "Cada hora"
+          }
+        }
+      ]
+    },
+    {
+      "key": "allow_disarm",
+      "type": "boolean",
+      "label": {
+        "en": "Allow turning surveillance off",
+        "fr": "Autoriser la coupure de la surveillance",
+        "de": "Abschalten der Überwachung erlauben",
+        "es": "Permitir desactivar la vigilancia"
+      },
+      "description": {
+        "en": "Lets scenes and the widget switch motion detection off or turn privacy mode on. Off by default: an error would leave the house unwatched.",
+        "fr": "Permet aux scènes et au widget de couper la détection de mouvement ou d’activer le mode privé. Désactivé par défaut : une erreur laisserait la maison sans surveillance.",
+        "de": "Erlaubt Szenen und Widget, die Bewegungserkennung abzuschalten oder den Privatsphäre-Modus einzuschalten. Standardmäßig aus: Ein Fehler ließe das Haus unbewacht.",
+        "es": "Permite a las escenas y al widget desactivar la detección de movimiento o activar el modo privado. Desactivado por defecto: un error dejaría la casa sin vigilancia."
+      },
+      "required": false,
+      "default": false
+    },
+    {
+      "key": "allow_siren",
+      "type": "boolean",
+      "label": {
+        "en": "Allow the siren",
+        "fr": "Autoriser la sirène",
+        "de": "Sirene erlauben",
+        "es": "Permitir la sirena"
+      },
+      "description": {
+        "en": "Adds a siren switch to the cameras that have one. Off by default: a scene error would wake the neighbours.",
+        "fr": "Ajoute un interrupteur de sirène aux caméras qui en ont une. Désactivé par défaut : une erreur de scène réveillerait les voisins.",
+        "de": "Fügt Kameras mit Sirene einen Schalter dafür hinzu. Standardmäßig aus: Ein Szenenfehler würde die Nachbarn wecken.",
+        "es": "Añade un interruptor de sirena a las cámaras que la tienen. Desactivado por defecto: un error de escena despertaría a los vecinos."
+      },
+      "required": false,
+      "default": false
+    },
+    {
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the names",
+        "fr": "Langue des noms",
+        "de": "Sprache der Namen",
+        "es": "Idioma de los nombres"
+      },
+      "description": {
+        "en": "Language of the feature names and of the texts sent to scenes. Names are set when a device is added.",
+        "fr": "Langue des noms de fonctionnalités et des textes envoyés aux scènes. Les noms sont fixés à l’ajout d’un appareil.",
+        "de": "Sprache der Funktionsnamen und der Texte für Szenen. Die Namen werden beim Hinzufügen festgelegt.",
+        "es": "Idioma de los nombres de funciones y de los textos enviados a las escenas. Se fijan al añadir un dispositivo."
+      },
+      "required": false,
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "English",
+            "de": "English",
+            "es": "English"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "Français",
+            "fr": "Français",
+            "de": "Français",
+            "es": "Français"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "Deutsch",
+            "fr": "Deutsch",
+            "de": "Deutsch",
+            "es": "Deutsch"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Español",
+            "fr": "Español",
+            "de": "Español",
+            "es": "Español"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion",
+        "de": "Verbindung testen",
+        "es": "Probar la conexión"
+      },
+      "timeout_seconds": 90
     }
   ],
   "scene_triggers": [
     {
       "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
+      "label": {
+        "en": "Motion detected by an Imou camera",
+        "fr": "Mouvement détecté par une caméra Imou",
+        "de": "Bewegung von einer Imou-Kamera erkannt",
+        "es": "Movimiento detectado por una cámara Imou"
+      },
       "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+        "en": "Every detection, people included, read at the alarm check. The camera image is fresh.",
+        "fr": "Toute détection, personnes comprises, lue à la relève des alarmes. L’image de la caméra est à jour.",
+        "de": "Jede Erkennung, Personen eingeschlossen, gelesen bei der Alarmabfrage. Das Kamerabild ist aktuell.",
+        "es": "Toda detección, personas incluidas, leída en la consulta de alarmas. La imagen de la cámara está al día."
       },
       "fields": [
         {
-          "key": "device",
+          "key": "camera",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
+          "label": {
+            "en": "Camera",
+            "fr": "Caméra",
+            "de": "Kamera",
+            "es": "Cámara"
+          }
         },
         {
-          "key": "target",
+          "key": "kind",
           "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
+          "label": {
+            "en": "What was detected",
+            "fr": "Ce qui est détecté",
+            "de": "Was erkannt wurde",
+            "es": "Lo detectado"
+          },
           "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
+            {
+              "value": "motion",
+              "label": {
+                "en": "Motion",
+                "fr": "Mouvement",
+                "de": "Bewegung",
+                "es": "Movimiento"
+              }
+            },
+            {
+              "value": "person",
+              "label": {
+                "en": "Person",
+                "fr": "Personne",
+                "de": "Person",
+                "es": "Persona"
+              }
+            }
           ]
         }
       ],
       "variables": [
         {
-          "key": "target",
+          "key": "camera_name",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": {
+            "en": "Camera name",
+            "fr": "Nom de la caméra",
+            "de": "Name der Kamera",
+            "es": "Nombre de la cámara"
+          }
+        },
+        {
+          "key": "kind_name",
+          "type": "string",
+          "label": {
+            "en": "What was detected",
+            "fr": "Ce qui est détecté",
+            "de": "Was erkannt wurde",
+            "es": "Lo detectado"
+          }
+        }
+      ]
+    },
+    {
+      "key": "person_detected",
+      "label": {
+        "en": "Person detected by an Imou camera",
+        "fr": "Personne détectée par une caméra Imou",
+        "de": "Person von einer Imou-Kamera erkannt",
+        "es": "Persona detectada por una cámara Imou"
+      },
+      "description": {
+        "en": "The human detection of the camera saw someone. The camera image is fresh.",
+        "fr": "La détection humaine de la caméra a vu quelqu’un. L’image de la caméra est à jour.",
+        "de": "Die Personenerkennung der Kamera hat jemanden gesehen. Das Kamerabild ist aktuell.",
+        "es": "La detección humana de la cámara vio a alguien. La imagen de la cámara está al día."
+      },
+      "fields": [
+        {
+          "key": "camera",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Camera",
+            "fr": "Caméra",
+            "de": "Kamera",
+            "es": "Cámara"
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "camera_name",
+          "type": "string",
+          "label": {
+            "en": "Camera name",
+            "fr": "Nom de la caméra",
+            "de": "Name der Kamera",
+            "es": "Nombre de la cámara"
+          }
+        }
+      ]
+    },
+    {
+      "key": "doorbell_pressed",
+      "label": {
+        "en": "Someone rang an Imou doorbell",
+        "fr": "Quelqu’un sonne à une sonnette Imou",
+        "de": "Jemand klingelt an einer Imou-Türklingel",
+        "es": "Alguien llama a un timbre Imou"
+      },
+      "description": {
+        "en": "The button of an Imou doorbell was pressed. Its camera image is fresh.",
+        "fr": "Le bouton d’une sonnette Imou a été pressé. L’image de sa caméra est à jour.",
+        "de": "Die Taste einer Imou-Türklingel wurde gedrückt. Das Kamerabild der Klingel ist aktuell.",
+        "es": "Se ha pulsado el botón de un timbre Imou. La imagen de su cámara está al día."
+      },
+      "fields": [
+        {
+          "key": "doorbell",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Doorbell",
+            "fr": "Sonnette",
+            "de": "Türklingel",
+            "es": "Timbre"
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "doorbell_name",
+          "type": "string",
+          "label": {
+            "en": "Doorbell name",
+            "fr": "Nom de la sonnette",
+            "de": "Name der Türklingel",
+            "es": "Nombre del timbre"
+          }
         }
       ]
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "refresh_snapshot",
+      "label": {
+        "en": "Refresh an Imou camera image",
+        "fr": "Rafraîchir l’image d’une caméra Imou",
+        "de": "Bild einer Imou-Kamera aktualisieren",
+        "es": "Actualizar la imagen de una cámara Imou"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "Takes a capture now, so \"send the camera image\" sends what the camera sees.",
+        "fr": "Prend une capture tout de suite, pour que « envoyer l’image de la caméra » montre ce qu’elle voit.",
+        "de": "Nimmt sofort ein Bild auf, damit „Kamerabild senden“ zeigt, was die Kamera sieht.",
+        "es": "Toma una captura ya, para que «enviar la imagen de la cámara» muestre lo que ve."
+      },
+      "timeout_seconds": 30,
       "fields": [
         {
-          "key": "device",
+          "key": "camera",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
+          "label": {
+            "en": "Camera",
+            "fr": "Caméra",
+            "de": "Kamera",
+            "es": "Cámara"
+          },
           "required": true
         }
-      ],
-      "outputs": [
+      ]
+    },
+    {
+      "key": "move_camera",
+      "label": {
+        "en": "Turn an Imou camera",
+        "fr": "Orienter une caméra Imou",
+        "de": "Imou-Kamera drehen",
+        "es": "Girar una cámara Imou"
+      },
+      "description": {
+        "en": "One short step of a motorized camera; it stops by itself.",
+        "fr": "Un petit pas d’une caméra motorisée ; elle s’arrête d’elle-même.",
+        "de": "Ein kurzer Schritt einer motorisierten Kamera; sie hält von selbst an.",
+        "es": "Un paso corto de una cámara motorizada; se detiene sola."
+      },
+      "timeout_seconds": 20,
+      "fields": [
         {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "key": "camera",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Camera",
+            "fr": "Caméra",
+            "de": "Kamera",
+            "es": "Cámara"
+          },
+          "required": true
+        },
+        {
+          "key": "direction",
+          "type": "select",
+          "label": {
+            "en": "Direction",
+            "fr": "Direction",
+            "de": "Richtung",
+            "es": "Dirección"
+          },
+          "required": true,
+          "default": "left",
+          "options": [
+            {
+              "value": "left",
+              "label": {
+                "en": "Left",
+                "fr": "Gauche",
+                "de": "Links",
+                "es": "Izquierda"
+              }
+            },
+            {
+              "value": "right",
+              "label": {
+                "en": "Right",
+                "fr": "Droite",
+                "de": "Rechts",
+                "es": "Derecha"
+              }
+            },
+            {
+              "value": "up",
+              "label": {
+                "en": "Up",
+                "fr": "Haut",
+                "de": "Hoch",
+                "es": "Arriba"
+              }
+            },
+            {
+              "value": "down",
+              "label": {
+                "en": "Down",
+                "fr": "Bas",
+                "de": "Runter",
+                "es": "Abajo"
+              }
+            },
+            {
+              "value": "zoom_in",
+              "label": {
+                "en": "Zoom in",
+                "fr": "Zoom avant",
+                "de": "Hineinzoomen",
+                "es": "Acercar"
+              }
+            },
+            {
+              "value": "zoom_out",
+              "label": {
+                "en": "Zoom out",
+                "fr": "Zoom arrière",
+                "de": "Herauszoomen",
+                "es": "Alejar"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "set_privacy_mode",
+      "label": {
+        "en": "Privacy mode of an Imou camera",
+        "fr": "Mode privé d’une caméra Imou",
+        "de": "Privatsphäre-Modus einer Imou-Kamera",
+        "es": "Modo privado de una cámara Imou"
+      },
+      "description": {
+        "en": "Covers or uncovers the lens. Covering needs \"Allow turning surveillance off\".",
+        "fr": "Masque ou démasque l’objectif. Masquer demande « Autoriser la coupure de la surveillance ».",
+        "de": "Verdeckt das Objektiv oder gibt es frei. Verdecken braucht „Abschalten der Überwachung erlauben“.",
+        "es": "Tapa o destapa el objetivo. Tapar requiere «Permitir desactivar la vigilancia»."
+      },
+      "timeout_seconds": 20,
+      "fields": [
+        {
+          "key": "camera",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Camera",
+            "fr": "Caméra",
+            "de": "Kamera",
+            "es": "Cámara"
+          },
+          "required": true
+        },
+        {
+          "key": "state",
+          "type": "select",
+          "label": {
+            "en": "Privacy mode",
+            "fr": "Mode privé",
+            "de": "Privatsphäre-Modus",
+            "es": "Modo privado"
+          },
+          "required": true,
+          "default": "off",
+          "options": [
+            {
+              "value": "on",
+              "label": {
+                "en": "On (lens covered)",
+                "fr": "Activé (objectif masqué)",
+                "de": "An (Objektiv verdeckt)",
+                "es": "Activado (objetivo tapado)"
+              }
+            },
+            {
+              "value": "off",
+              "label": {
+                "en": "Off (camera watching)",
+                "fr": "Désactivé (caméra active)",
+                "de": "Aus (Kamera überwacht)",
+                "es": "Desactivado (cámara vigilando)"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "set_motion_detection",
+      "label": {
+        "en": "Motion detection of an Imou camera",
+        "fr": "Détection de mouvement d’une caméra Imou",
+        "de": "Bewegungserkennung einer Imou-Kamera",
+        "es": "Detección de movimiento de una cámara Imou"
+      },
+      "description": {
+        "en": "Switches the detection on or off. Off needs \"Allow turning surveillance off\".",
+        "fr": "Active ou coupe la détection. Couper demande « Autoriser la coupure de la surveillance ».",
+        "de": "Schaltet die Erkennung an oder aus. Aus braucht „Abschalten der Überwachung erlauben“.",
+        "es": "Activa o desactiva la detección. Desactivar requiere «Permitir desactivar la vigilancia»."
+      },
+      "timeout_seconds": 20,
+      "fields": [
+        {
+          "key": "camera",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Camera",
+            "fr": "Caméra",
+            "de": "Kamera",
+            "es": "Cámara"
+          },
+          "required": true
+        },
+        {
+          "key": "state",
+          "type": "select",
+          "label": {
+            "en": "Motion detection",
+            "fr": "Détection de mouvement",
+            "de": "Bewegungserkennung",
+            "es": "Detección de movimiento"
+          },
+          "required": true,
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": {
+                "en": "On",
+                "fr": "Activée",
+                "de": "An",
+                "es": "Activada"
+              }
+            },
+            {
+              "value": "off",
+              "label": {
+                "en": "Off",
+                "fr": "Désactivée",
+                "de": "Aus",
+                "es": "Desactivada"
+              }
+            }
+          ]
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "imou",
+      "label": {
+        "en": "Imou cameras",
+        "fr": "Caméras Imou",
+        "de": "Imou-Kameras",
+        "es": "Cámaras Imou"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "Last image, last event of each camera, privacy mode.",
+        "fr": "Dernière image, dernier événement de chaque caméra, mode privé.",
+        "de": "Letztes Bild, letztes Ereignis jeder Kamera, Privatsphäre-Modus.",
+        "es": "Última imagen, último evento de cada cámara, modo privado."
+      },
+      "icon": "video",
+      "action_timeout_seconds": 30,
+      "settings": [
+        {
+          "key": "cameras",
+          "type": "multi_select",
+          "source": "devices",
+          "label": {
+            "en": "Cameras (empty: all)",
+            "fr": "Caméras (vide : toutes)",
+            "de": "Kameras (leer: alle)",
+            "es": "Cámaras (vacío: todas)"
+          }
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,39 @@
+{
+  "result": {
+    "msg": "Operation is successful.",
+    "code": "0",
+    "data": {
+      "alarms": [
+        {
+          "msgType": "human",
+          "alarmId": "1623428357863536",
+          "name": "FAKE0IMOU0PT001-1",
+          "time": 1664127393,
+          "localDate": "2022-09-25 17:36:33",
+          "type": "120",
+          "thumbUrl": "https://pictures.imou.test/thumb/1623428357863536.jpg",
+          "deviceId": "FAKE0IMOU0PT001",
+          "picurlArray": ["https://pictures.imou.test/pic/1623428357863536.jpg"],
+          "channelId": "0",
+          "token": "fake-token-1_big"
+        },
+        {
+          "msgType": "human",
+          "alarmId": "1640588402878576",
+          "name": "FAKE0IMOU0PT001-1",
+          "time": 1664021890,
+          "localDate": "2022-09-24 12:18:10",
+          "type": "120",
+          "thumbUrl": "https://pictures.imou.test/thumb/1640588402878576.jpg",
+          "deviceId": "FAKE0IMOU0PT001",
+          "picurlArray": ["https://pictures.imou.test/pic/1640588402878576.jpg"],
+          "channelId": "0",
+          "token": "fake-token-2_big"
+        }
+      ],
+      "count": 2,
+      "nextAlarmId": 1489575655024752
+    }
+  },
+  "id": "28"
+}

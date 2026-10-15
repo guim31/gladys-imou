@@ -31,16 +31,26 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
+index.js                          SDK wiring only: src/app.js registers the handlers before connect()
+src/app.js                        every SDK handler -> the hub (also used by the tests)
+src/hub.js                        the account: timers, quota, alarms, pictures, states, commands, logs
+src/devices.js                    Gladys devices (one per camera/channel), feature names (4 languages), values
+src/imou/client.js                Imou Open API client: signature, token, data centre, error kinds, calls
+src/imou/http.js                  the HTTP seam (fetch), replaced by the fake cloud in the tests
+src/imou/model.js                 device list, abilities, alarms and their kinds, battery, SD card
+src/image.js                      picture -> camera image <= 150 KB (worker, one at a time)
+src/image-worker.js               the conversion: scaled decode, shrink, jpeg-js encode
+src/jpeg-scaled.js                baseline JPEG decoder straight to 1/2, 1/4, 1/8 (memory)
 src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+src/widgets.js                    dashboard widget `imou` (manifest `widgets`)
+src/texts.js                      status, error, report, action and value texts (4 languages)
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
+src/store.js                      /data/imou-state.json (token, cameras seen ringing or detecting people)
+scripts/probe.mjs                 probe of the real Open API (not in the image)
 gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (en and fr mandatory)
 test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+                                  and helpers/fakeCloud.js (built from test/fixtures/imou)
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +80,10 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** exists in English, French, German and Spanish: action
+  messages, widget content, feature names, manifest texts, and
+  `docs/en.md`, `docs/fr.md`, `docs/de.md`, `docs/es.md`, kept in sync
+  (`test/i18n.test.js` checks the languages and the doc sections).
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -233,3 +245,41 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## Pièges propres à Imou
+
+- **API ouverte officielle** (open.imoulife.com), signée : `md5("time:<t>,nonce:<n>,appSecret:<secret>")`, le secret
+  ne voyage jamais. Jeton `accessToken` de quelques jours (`expireTime` en secondes) gardé dans `/data` ; la réponse
+  donne `currentDomain`, le centre de données du compte : n'y aller que s'il est dans les domaines Imou
+  (`easy4ip.com`, `lechange.cn`, `imoulife.com`, `imou.com`). Codes : `TK1002` jeton expiré (renouvelé une fois),
+  `SN1001`/`SN1004`/`OP1008` AppId ou AppSecret refusés (lectures arrêtées jusqu'au changement de configuration),
+  `OP1013` quota épuisé (pause d'une heure), `FL1001` caméra au-delà des licences de l'offre gratuite (5 appareils
+  selon imou_life), `DV1007` hors ligne, `DV1030` en veille, `DV1049` pas de carte SD.
+- **Quota** : chaque appel compte. Imou ne pousse ses événements que vers une adresse publique (`setMessageCallback`),
+  impossible pour un conteneur Gladys : les alarmes se lisent par `getAlarmMessage`, **un appel par caméra**. Seules
+  les caméras ajoutées à Gladys sont lues ; l'état en ligne vient de la liste des appareils (un appel pour toutes).
+  ~1 700 appels/jour par caméra sur secteur avec les réglages par défaut ; l'action « Tester la connexion » donne
+  l'estimation (`hub.callsPerDay`). imou_life parlait de 20 000 appels/jour, l'intégration officielle d'un quota
+  mensuel : non vérifié, la doc renvoie à « My Resources ».
+- **Images d'alarme chiffrées** sur beaucoup de modèles (l'intégration HA officielle exige la bibliothèque native
+  d'Imou pour les ouvrir) : une image qui n'est pas un JPEG est remplacée par une capture `setDeviceSnapEnhanced`
+  d'une caméra sur secteur. La capture est prête un instant après la réponse : attendre ~2 s, deux essais.
+- **Caméras sur batterie** (`Dormant`) : jamais de capture sur minuteur, pas de lecture des interrupteurs ni de la
+  carte SD en veille (chaque appel la réveillerait) ; statut `4` = veille = en ligne pour Gladys.
+- **Interrupteurs** : `getDeviceCameraStatus` lit `motionDetect` (ou `mobileDetect` selon le firmware),
+  `closeCamera` (mode privé), `whiteLight` ; la détection s'écrit par `modifyDeviceAlarmStatus`. Les capacités
+  (`ability`) se comparent sans casse. PTZ : `PTZ` (avec zoom), `PT`/`PT1` (4 directions), `PT2` (gauche/droite) ;
+  `controlMovePTZ` prend une durée : la caméra s'arrête seule (pas de mouvement laissé en cours).
+- **Sécurité** (consigne de la série) : couper la détection ou masquer l'objectif désarme. Ces deux fonctionnalités
+  sont en **lecture seule** ; le changement passe par les actions de scène et le widget, le sens « couper » seulement
+  avec « Autoriser la coupure de la surveillance » (désactivé par défaut). Sirène : désactivée par défaut.
+- **Alarmes au démarrage** : une alarme n'est « nouvelle » que si elle date d'après le moment où la caméra est suivie
+  (démarrage ou ajout à Gladys) — pas « après la première lecture », sinon une alarme entre l'ajout et la première
+  lecture serait perdue. Une alarme listée plus de 10 min en retard s'affiche sans déclencher.
+- **Plateforme « IoT »** (appareils avec `productId`) : propriétés par références (`getIotDeviceProperties`), non
+  gérées : image, alarmes et en ligne seulement. Un accessoire sans canal (passerelle) n'est pas une caméra.
+- Le proxy des sessions de code refuse `*.easy4ip.com` et `open.imoulife.com` : `scripts/probe.mjs` se lance ailleurs.
+- Minuteurs simulés de `node:test` : un `setTimeout(...).unref()` en attente fait sortir la boucle d'événements du
+  test (« Promise resolution is still pending ») ; ne pas `unref` une attente qu'on `await`.
+- Garde « du » de `test/i18n.test.js` : « Sie » (elle) ou « Ihr » (son) en début de phrase sont pris pour la forme
+  de politesse : reformuler.
