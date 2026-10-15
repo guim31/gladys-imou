@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-15
+
 ### Added
 
 - Imou cameras and doorbells in Gladys through the official Imou Open API
@@ -38,4 +40,5 @@ the notes of the version's GitHub Release.
 - Feature names, messages, manifest and documentation in English, French,
   German and Spanish.
 
-[Unreleased]: https://github.com/guim31/gladys-imou/commits/main
+[Unreleased]: https://github.com/guim31/gladys-imou/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/guim31/gladys-imou/releases/tag/v1.0.1
