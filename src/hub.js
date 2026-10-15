@@ -857,6 +857,11 @@ export class ImouHub {
     return this.keepImage(camera, image, `capture-${hash(`${camera.key}${this.now()}`)}`);
   }
 
+  /** Resolves once every capture in progress is done. */
+  async flushImages() {
+    await Promise.allSettled([...this.imageReads.values()]);
+  }
+
   /** Publish an image to Gladys and keep it for the widget. */
   async keepImage(camera, image, imageKey) {
     const before = this.images.get(camera.key);

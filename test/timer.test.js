@@ -21,7 +21,7 @@ async function timedWorld(t, options = {}) {
   const clock = { now: () => Date.now() };
   const w = await createWorld({ timers: true, clock, ...options });
   t.after(() => w.app.stop());
-  await createAll(w);
+  await createAll(w, { flush: false });
   // The captures of the new cameras wait a moment before their download.
   await tick(t, 10);
   return w;

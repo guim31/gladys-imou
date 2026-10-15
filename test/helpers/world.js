@@ -96,12 +96,22 @@ export async function createWorld({
 /** External ids of a camera of the fixtures. */
 export const cameraIds = (gladys, key = KEYS.PT) => gladys.externalIds('camera', key);
 
-/** Add every discovered device in Gladys, as the user would. */
-export async function createAll(world) {
+/**
+ * Add every discovered device in Gladys, as the user would.
+ * @param {object} world
+ * @param {object} [options] flush: wait for the first captures (not with mocked timers)
+ */
+export async function createAll(world, { flush = true } = {}) {
   for (const device of world.fake.discoveredDevices) {
     await world.fake.deviceCreated(device);
   }
   await settle();
+  // The first captures of the new cameras wait a moment before their download:
+  // let them finish, so a test's own capture is not shared with one of them.
+  if (flush) {
+    await world.hub.flushImages();
+    await settle();
+  }
 }
 
 /** The discovered device of a camera key. */
